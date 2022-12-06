@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { useState } from 'react';
-
+import {decode as base64_decode, encode as base64_encode, encode} from 'base-64';
+//var base64 = require('base-64');
 const Register = (props) => {
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
@@ -8,15 +9,25 @@ const Register = (props) => {
     const [password2, setPassword2] = useState('')
     const [preferences, setPreferences] = useState({})
 
+    let headers = new Headers();
+
+    headers.append('Content-Type', 'application/json');
+    headers.append('Accept', 'application/json');
+    headers.append('Authorization', 'Basic ' + encode(name + ":" + email + ":"+ password1+ ":" + password2 + ":" + preferences));
+    headers.append('Origin','http://localhost:3000/');
+    headers.append("Access-Control-Allow-Origin", "*")
+
 
     const sendData = (user) =>{
-        fetch(`http://localhost:5000/register`,{
-            'method':'POST',
-             headers : {
-            'Content-Type':'application/json'
-            },
-        user: JSON.stringify(user)
-        }).then(response => response.json())
+        fetch('http://localhost:5000/register',{
+          'mode' : 'no-cors',
+          'credential' : 'include',
+          'method':'POST',
+          'headers' : headers,
+          user: JSON.stringify(user)
+        })
+        .then(response => response.json())
+        .then(json => console.log(json))
         .catch(error => console.log(error))
 
     }

@@ -6,7 +6,7 @@ import sys
 from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
-CORS(app, support_credentials=True)
+CORS(app, support_credentials=True, resources={r"/register/*": {"origins": "*"}})
 app.config['CORS_HEADERS'] = 'Content-Type'
 # <client_credentials>
 ca = certifi.where()
@@ -93,8 +93,9 @@ def index():
         #user_data = records.find_one({"email": email})
         #new_email = user_data['email']
         msg = 'Welcome to NewsBytes'
-
-    return msg
+    response= flask.jsonify(msg)
+    response.headers.add('Access-Control-Allow-Origin','*')
+    return response
 
 
 
