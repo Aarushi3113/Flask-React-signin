@@ -1,43 +1,23 @@
 import React, { Component } from 'react'
 import { useState } from 'react';
-import {decode as base64_decode, encode as base64_encode, encode} from 'base-64';
-//var base64 = require('base-64');
+
 const Register = (props) => {
-    const [name, setName] = useState('')
-    const [email, setEmail] = useState('')
-    const [password1, setPassword1] = useState('')
-    const [password2, setPassword2] = useState('')
-    const [preferences, setPreferences] = useState({})
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password1, setPassword1] = useState('');
+  const [password2, setPassword2] = useState('');
+  const [preferences, setPreferences] = useState({});
 
-    let headers = new Headers();
-
-    headers.append('Content-Type', 'application/json');
-    headers.append('Accept', 'application/json');
-    headers.append('Authorization', 'Basic ' + encode(name + ":" + email + ":"+ password1+ ":" + password2 + ":" + preferences));
-    headers.append('Origin','http://localhost:3000/');
-    headers.append("Access-Control-Allow-Origin", "*")
-
-
-    const sendData = (user) =>{
-        fetch('http://localhost:5000/register',{
-          'mode' : 'no-cors',
-          'credential' : 'include',
-          'method':'POST',
-          'headers' : headers,
-          user: JSON.stringify(user)
-        })
-        .then(response => response.json())
-        .then(json => console.log(json))
-        .catch(error => console.log(error))
-
-    }
-
-    const handleSubmit=(e)=>{ 
-        const user = {name, email , password1, password2, preferences}
-        e.preventDefault()
-        console.log(user)
-        sendData(user)
-      }
+  const handleSubmit=(e)=>{ 
+    e.preventDefault()
+    const user = {name, email , password1, password2, preferences}
+    fetch('http://localhost:5000/register',{
+      method : 'POST',
+      mode : 'cors',
+      headers: {"Content-Type": "application/json", 'Access-Control-Allow-Methods' : "POST",'Referer': 'http://localhost:3000/'},
+      body: JSON.stringify(user)
+    }).then(response => response.json)
+  }
 
     const handleSelect = (e) =>{
         var options = e.target.options;
@@ -64,6 +44,8 @@ const Register = (props) => {
               defaultValue={name}
               onChange={(e)=> setName(e.target.value)}
               required
+              name = "name"
+              
             />
           </div>
           <div className="mb-3">
@@ -75,6 +57,8 @@ const Register = (props) => {
               defaultValue={email}
               onChange={(e)=>setEmail(e.target.value)}
               required
+              name = "email"
+              
             />
           </div>
           <div className="mb-3">
@@ -86,6 +70,8 @@ const Register = (props) => {
               defaultValue={password1}
               onChange={(e)=>setPassword1(e.target.value)}
               required
+              name = "password1"
+              
             />
           </div>
           <div className="mb-3">
@@ -97,12 +83,13 @@ const Register = (props) => {
               defaultValue={password2}
               onChange={(e)=>setPassword2(e.target.value)}
               required
+              name = "password2"
             />
           </div>
           <div className="mb-3">
             <label>Which news category do you belong to?</label>
           </div>
-          <select id = "select" multiple onChange={handleSelect}>
+          <select id = "select" multiple onChange={handleSelect} name = 'preferences'>
               <option>Business</option>
               <option>Entertainment</option>
               <option>Politics</option>

@@ -1,13 +1,17 @@
-from flask import Flask, render_template, request, url_for, redirect, session
+from flask import Flask, render_template, request, url_for, redirect, session, jsonify
 import pymongo
 import bcrypt
 import certifi
 import sys
 from flask_cors import CORS, cross_origin
+import requests
+session = requests.Session()
+session.verify = False
+
 
 app = Flask(__name__)
-CORS(app, support_credentials=True, resources={r"/register/*": {"origins": "*"}})
-app.config['CORS_HEADERS'] = 'Content-Type'
+CORS(app)
+#app.config['CORS_HEADERS'] = 'Content-Type'
 # <client_credentials>
 ca = certifi.where()
 CONNECTION_STRING= "mongodb://newsbytes:sQ8hYWggAhkmRYD35ltNwfYwhmhxrBDBmHGzPPt041yTJv0nxOmXHnhU192qt8AEhDYXZM2NYn4rACDb5J2MpA==@newsbytes.mongo.cosmos.azure.com:10255/?ssl=true&retrywrites=false&replicaSet=globaldb&maxIdleTimeMS=120000&appName=@newsbytes@"
@@ -45,68 +49,77 @@ def get_db(db_name = DB_NAME):
 
 
 
-app.secret_key = "testing"
+#app.secret_key = "testing"
 db = get_db(DB_NAME)
 records = db[COLLECTION_NAME]
 
+@app.after_request
+def after_request(response):
+  response.headers.add('Access-Control-Allow-Origin', '*')
+  response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+  response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+  return response
+
+'''
 @app.route("/")
 def main():
     return 'Aaru'
+'''
 
-@app.route("/register", methods = ["POST"], strict_slashes=False)
-@cross_origin(origin='localhost',headers=['Content- Type','Authorization'])
-#@crossdomain(origin='*')
+@app.route("/register", methods = ["POST","GET"], strict_slashes=False)
+@cross_origin()
 def index():
-    msg = ''
-    #if request.method == "POST":
-        #user = request.form.get("name")
-        #email = request.form.get("email")
+    msg = {}
+    if request.method == "POST":
+        print('got a post request')
+        print(request)
+        req = request.get_json()
 
-    user = request.json['name']
-    email = request.json['email']
+        name = req['name']
+        email = req['email']
 
-        #password1 = request.form.get("password1")
-        #password2 = request.form.get("password2")
+        password1 = req['password1']
+        password2 = req['password2']
 
-    password1 = request.json['password1']
-    password2 = request.json['password2']
+        preferences = req['preferences']
 
-    preferences = request.json['preferences']
+        #user_found = records.find_one({"name": user})
+        #email_found = records.find_one({"email": email})
 
-    user_found = records.find_one({"name": user})
-    email_found = records.find_one({"email": email})
-
-    if user_found:
-        msg = 'There already is a user by that name'
+        #if user_found:
+            #msg['e'] = 'There already is a user by that name'
         
-    if email_found:
-        msg = 'This email already exists'
+        #if email_found:
+            #msg['e'] = 'This email already exists'
 
-    if password1 != password2:
-        msg = 'Passwords should match'
-    else:
-        hashed = bcrypt.hashpw(password2.encode('utf-8'), bcrypt.gensalt())
-        user_input = {'name': user, 'email': email, 'password': hashed, 'preferences':preferences}
-        records.insert_one(user_input)
-        print(user_input)
+        if password1 != password2:
+            msg['e'] = 'Passwords should match'
+        else:
+            hashed = bcrypt.hashpw(password2.encode('utf-8'), bcrypt.gensalt())
+            user_input = {'name': name, 'email': email, 'password': password2, 'preferences':preferences}
+            records.insert_one(user_input)
+            print(user_input)
 
         #user_data = records.find_one({"email": email})
         #new_email = user_data['email']
-        msg = 'Welcome to NewsBytes'
-    response= flask.jsonify(msg)
+        msg['e'] = 'Welcome to NewsBytes'
+    else:
+        msg['e'] = 'Not a POST request'
+    response= jsonify(msg)
     response.headers.add('Access-Control-Allow-Origin','*')
     return response
 
 
 
-@app.route('/login', methods = ["POST"])
+@app.route("/login", methods = ["POST","GET"])
 @cross_origin(origin='localhost',headers=['Content- Type','Authorization'])
 #@crossdomain(origin='*')
 def login():
-    msg = ' '
+    msg = {}
     if request.method == "POST":
-        email = request.form.get("email")
-        password = request.form.get("password")
+        req = request.get_json()
+        email = req['email']
+        password = req['password']
 
         email_found = records.find_one({"email": email})
         if email_found:
@@ -115,16 +128,15 @@ def login():
             
             if bcrypt.checkpw(password.encode('utf-8'), passwordcheck):
                 session["email"] = email_val
-                return 'User found'
+                msg['e'] = "User Found!"
             else:
-                message = 'Wrong password'
-                return msg
+                msg['e'] = 'Wrong password'
 
         else:
-            msg = 'Email not found'
-            return msg
-    return msg
-
+            msg['e'] = 'Email not found'
+    response= jsonify(msg)
+    response.headers.add('Access-Control-Allow-Origin','*')
+    return response
 
 if __name__ == "__main__":
     app.run(port = 5000, debug = True)
