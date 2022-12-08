@@ -11,7 +11,8 @@ session.verify = False
 
 app = Flask(__name__)
 CORS(app)
-#app.config['CORS_HEADERS'] = 'Content-Type'
+resources={r"/*": {"origins": "http://localhost:3000"}}
+app.config['CORS_HEADERS'] = 'Content-Type'
 # <client_credentials>
 ca = certifi.where()
 CONNECTION_STRING= "mongodb://newsbytes:sQ8hYWggAhkmRYD35ltNwfYwhmhxrBDBmHGzPPt041yTJv0nxOmXHnhU192qt8AEhDYXZM2NYn4rACDb5J2MpA==@newsbytes.mongo.cosmos.azure.com:10255/?ssl=true&retrywrites=false&replicaSet=globaldb&maxIdleTimeMS=120000&appName=@newsbytes@"
@@ -60,16 +61,17 @@ def after_request(response):
   response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
   return response
 
-'''
+
 @app.route("/")
 def main():
-    return 'Aaru'
-'''
+    c = {'app':'aarushi'}
+    return c
+
 
 @app.route("/register", methods = ["POST","GET"], strict_slashes=False)
-@cross_origin()
 def index():
     msg = {}
+    content_type = request.headers.get('Content-Type')
     if request.method == "POST":
         print('got a post request')
         print(request)

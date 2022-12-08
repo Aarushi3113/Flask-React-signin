@@ -11,13 +11,13 @@ const Register = (props) => {
   const handleSubmit=(e)=>{ 
     e.preventDefault()
     const user = {name, email , password1, password2, preferences}
-    fetch('http://localhost:5000/register',{
+    fetch('https://localhost:5000/register',{
       method : 'POST',
-      mode : 'cors',
+      //mode : 'no-cors',
       headers: {"Content-Type": "application/json", 'Access-Control-Allow-Methods' : "POST",'Referer': 'http://localhost:3000/'},
       body: JSON.stringify(user)
     }).then(response => response.json)
-  }
+  } 
 
     const handleSelect = (e) =>{
         var options = e.target.options;

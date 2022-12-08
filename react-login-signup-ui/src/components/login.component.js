@@ -9,9 +9,9 @@ const Login = (props) => {
   const handleSubmit=(e)=>{ 
     e.preventDefault()
     const user = { email , password}
-    fetch('http://localhost:5000/register',{
+    fetch('https://localhost:5000/login',{
       method : 'POST',
-      mode : 'cors',
+      //mode : 'no-cors',
       headers: {"Content-Type": "application/json", 'Access-Control-Allow-Methods' : "POST",'Referer': 'http://localhost:3000/'},
       body: JSON.stringify(user)
       }).then(response => response.json)
